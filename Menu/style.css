@@ -1,0 +1,47 @@
+body{
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: center;
+    background-color: #222;
+}
+nav h2{
+    color: white;
+}
+
+.hero{
+    max-width: 550px;
+}
+
+.hero h1{
+    font-size: 45px;
+    margin-bottom: 15px;
+}
+
+.hero h2{
+    color: blue;
+    margin-bottom: 15px;
+}
+
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.hero a {
+    background-color: blue;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.hero-image img {
+    width: 250px;
+    border-radius: 50%;
+}
