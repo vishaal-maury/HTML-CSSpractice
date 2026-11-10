@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picker Wheel</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #151515;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 650px;
+}
+
+h1 {
+    margin-bottom: 25px;
+}
+
+.wheel-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 30px auto;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid white;
+    z-index: 2;
+}
+
+input {
+    width: 65%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+}
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 5px;
+}
+
+.add-btn {
+    background: #00c896;
+    color: black;
+}
+
+.spin-btn {
+    background: #ffb703;
+    color: black;
+    font-size: 17px;
+    padding: 14px 35px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#options {
+    margin: 20px auto;
+    max-width: 350px;
+    text-align: left;
+}
+
+.option {
+    background: #292929;
+    padding: 10px;
+    margin: 6px 0;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.option button {
+    background: #ff5555;
+    color: white;
+    padding: 5px 10px;
+    margin: 0;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 23px;
+    color: #ffb703;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎯 Random Picker Wheel</h1>
+
+    <div>
+        <input type="text" id="optionInput"
+        placeholder="Enter your option">
+
+        <button class="add-btn" onclick="addOption()">
+            Add
+        </button>
+    </div>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="600" height="600"></canvas>
+    </div>
+
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+        SPIN THE WHEEL
+    </button>
+
+    <h2 id="result">Add your options!</h2>
+
+    <div id="options"></div>
+
+</div>
+
+<script>
+
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
+let options = ["Study", "Coding", "Gaming", "Exercise"];
+let rotation = 0;
+let spinning = false;
+
+const colors = [
+    "#ff595e",
+    "#1982c4",
+    "#8ac926",
+    "#ffca3a",
+    "#6a4c93",
+    "#f72585"
+];
+
+function drawWheel() {
+
+    const center = 300;
+    const radius = 290;
+
+    ctx.clearRect(0, 0, 600, 600);
+
+    if (options.length === 0) return;
+
+    const angle = (2 * Math.PI) / options.length;
+
+    options.forEach((option, index) => {
+
+        const startAngle = rotation + index * angle;
+        const endAngle = startAngle + angle;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius,
+            startAngle, endAngle);
+        ctx.closePath();
+
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.save();
+
+        ctx.translate(center, center);
+        ctx.rotate(startAngle + angle / 2);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 22px Arial";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(option, radius - 20, 0);
+
+        ctx.restore();
+
+    });
+
+}
+
+function addOption() {
+
+    const input = document.getElementById("optionInput");
+    const value = input.value.trim();
+
+    if (value === "") return;
+
+    if (spinning) return;
+
+    options.push(value);
+
+    input.value = "";
+
+    updateOptions();
+    drawWheel();
+
+}
+
+function removeOption(index) {
+
+    if (spinning) return;
+
+    options.splice(index, 1);
+
+    updateOptions();
+    drawWheel();
+
+}
+
+function updateOptions() {
+
+    const list = document.getElementById("options");
+
+    list.innerHTML = "";
+
+    options.forEach((option, index) => {
+
+        const div = document.createElement("div");
+        div.className = "option";
+
+        const span = document.createElement("span");
+        span.textContent = option;
+
+        const button = document.createElement("button");
+        button.textContent = "Remove";
+        button.onclick = () => removeOption(index);
+
+        div.appendChild(span);
+        div.appendChild(button);
+
+        list.appendChild(div);
+
+    });
+
+}
+
+function spinWheel() {
+
+    if (spinning || options.length < 2) {
+        if (options.length < 2) {
+            document.getElementById("result").textContent =
+                "Add at least 2 options!";
+        }
+        return;
+    }
+
+    spinning = true;
+
+    document.getElementById("spinBtn").disabled = true;
+
+    document.getElementById("result").textContent = "Spinning...";
+
+    const winner = Math.floor(Math.random() * options.length);
+
+    const slice = (2 * Math.PI) / options.length;
+
+    // Pointer is at the top (-90 degrees).
+    const target = -Math.PI / 2 -
+        (winner + 0.5) * slice;
+
+    const extraSpins = 6 * 2 * Math.PI;
+
+    const startRotation = rotation;
+    const finalRotation =
+        startRotation +
+        extraSpins +
+        ((target - startRotation) % (2 * Math.PI) +
+        2 * Math.PI) % (2 * Math.PI);
+
+    const duration = 4000;
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Smooth deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 4);
+
+        rotation = startRotation +
+            (finalRotation - startRotation) * easeOut;
+
+        drawWheel();
+
+        if (progress < 1) {
+
+            requestAnimationFrame(animate);
+
+        } else {
+
+            rotation = finalRotation % (2 * Math.PI);
+
+            drawWheel();
+
+            document.getElementById("result").textContent =
+                "🎉 Winner: " + options[winner];
+
+            spinning = false;
+            document.getElementById("spinBtn").disabled = false;
+
+        }
+
+    }
+
+    requestAnimationFrame(animate);
+
+}
+
+// Initial setup
+updateOptions();
+drawWheel();
+
+</script>
+
+</body>
+</html>
